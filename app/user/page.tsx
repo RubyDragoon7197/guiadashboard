@@ -3,6 +3,9 @@
 // 👆 Este componente se ejecuta en el navegador (cliente)
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+
+
 // 🧩 Definimos el tipo (estructura) del estudiante
 interface Estudiante {
 id: string;
@@ -17,6 +20,9 @@ const [nombre, setNombre] = useState<string>("");
 const [telefono, setTelefono] = useState<string>("");
 const [mensaje, setMensaje] = useState<string | null>(null);
 const [loading, setLoading] = useState<boolean>(true);
+const [message, setMessage] = useState<string | null>(null);
+const router = useRouter();
+
 // 🚀 Cargar la información del estudiante logueado
 const fetchEstudiante = async () => {
 const {
@@ -60,15 +66,25 @@ fetchEstudiante(); // 🔄 Volvemos a cargar los datos actualizados
 }
 };
 useEffect(() => {
-fetchEstudiante();
-}, []);
+const checkUser = async () => {
+const { data } = await supabase.auth.getUser();
+if (!data.user) {
+// ❌ No hay usuario logueado → redirige a login
+router.push("/login");
+} else {
+// ✅ Usuario logueado, seguimos con la página
+setLoading(false);
+}
+};
+checkUser();
+}, [router]);
 if (loading) return <p className="text-center">⏳ Cargando...</p>;
 // 🚪 Función opcional: cerrar sesión -> antes del return
-const handleLogout = async () => {
-await supabase.auth.signOut();
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push("/login"); 
+    };
 
-// router.push("/login"); deben quitar las dos barritas una vez hagan la importación
-};
 // 🎨 INTERFAZ VISUAL
 return (
 <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg
@@ -87,6 +103,7 @@ required
 className="border p-2 rounded"
 />
 {/* Campo de teléfono */}
+
 <input
 type="text"
 value={telefono}

@@ -1,8 +1,10 @@
 "use client";
 // 👆 Este componente se ejecuta del lado del cliente (navegador)
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 // 👆 Importamos React y el cliente de Supabase que configuramos en /lib
+
+import { useRouter } from "next/navigation";
 export default function RegisterPage() {
 // 📦 Estados tipados con TypeScript
 const [nombre, setNombre] = useState<string>("");
@@ -10,6 +12,9 @@ const [email, setEmail] = useState<string>("");
 const [telefono, setTelefono] = useState<string>("");
 const [password, setPassword] = useState<string>("");
 const [message, setMessage] = useState<string | null>(null);
+const [loading, setLoading] = useState(true);
+const router = useRouter();
+
 // ⚙️ Esta función maneja el registro del usuario
 const handleRegister = async (e: React.FormEvent<HTMLFormElement>) =>
 {
@@ -51,6 +56,22 @@ return;
 // ✅ Si todo sale bien:
 setMessage("✅ Usuario registrado y guardado correctamente. Revisatu correo para confirmar.");
 };
+useEffect(() => {
+const checkUser = async () => {
+const { data } = await supabase.auth.getUser();
+if (!data.user) {
+// ✅ Usuario logueado, seguimos con la página
+setLoading(false);
+} else {
+// ❌ No hay usuario logueado → redirige a login
+router.push("/user");
+}
+
+};
+checkUser();
+}, [router]);
+if (loading) return <p className="text-center mt-10">Verificando
+sesión...</p>;
 return (
 <div className="max-w-sm mx-auto mt-10 p-6 border rounded-lg
 shadow">
@@ -102,6 +123,16 @@ Registrarse
 
 {/* 💬 Mostramos el mensaje de éxito o error */}
 {message && <p className="mt-4 text-center">{message}</p>}
+{/* 🔗 Enlace a la página de login */}
+<p className="mt-4 text-center">
+¿Ya tienes cuenta?{" "}
+<button
+onClick={() => router.push("/login")}
+className="text-blue-600 underline"
+>
+Inicia sesión aquí
+</button>
+</p>
 </div>
 );
 }

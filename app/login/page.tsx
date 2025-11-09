@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 // 👆 Importamos React y el cliente de Supabase que configuramos en /lib
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
 // 📦 Estados tipados con TypeScript
+const [loading, setLoading] = useState(true);
+const router = useRouter();
 const [email, setEmail] = useState<string>("");
 
 const [password, setPassword] = useState<string>("");
@@ -63,6 +67,16 @@ Iniciar sesión
 </form>
 {/* 💬 Mostramos mensajes de éxito o error */}
 {message && <p className="mt-4 text-center">{message}</p>}
+{/* 🔗 Enlace a la página de registro */}
+<p className="mt-4 text-center">
+¿No tienes cuenta?{" "}
+<button
+onClick={() => router.push("/register")}
+className="text-blue-600 underline"
+>
+Regístrate aquí
+</button>
+</p>
 </div>
 );
 }

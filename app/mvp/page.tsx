@@ -2,6 +2,8 @@
 // 👆 Este archivo se ejecuta en el cliente (navegador), no en el servidor.
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+
 // 🧩 Definimos la estructura (tipo) de una actividad
 interface Actividad {
 id: string;
@@ -31,6 +33,9 @@ const [cursos, setCursos] = useState<Curso[]>([]);
 const [actividades, setActividades] = useState<Actividad[]>([]);
 const [mensaje, setMensaje] = useState<string | null>(null);
 const [loading, setLoading] = useState<boolean>(true);
+const [message, setMessage] = useState<string | null>(null);
+const router = useRouter();
+
 // -----------------------------------------
 // 🚀 FUNCIÓN 1: Cargar cursos desde Supabase
 // -----------------------------------------
@@ -111,9 +116,18 @@ fetchActividades(); // 🔄 Actualizamos la lista
 // 🌀 useEffect: Cargar cursos y actividades al iniciar
 // -------------------------------------------------
 useEffect(() => {
-fetchCursos();
-fetchActividades();
-}, []);
+const checkUser = async () => {
+const { data } = await supabase.auth.getUser();
+if (!data.user) {
+// ❌ No hay usuario logueado → redirige a login
+router.push("/login");
+} else {
+// ✅ Usuario logueado, seguimos con la página
+setLoading(false);
+}
+};
+checkUser();
+}, [router]);
 if (loading) return <p className="text-center">⏳ Cargando...</p>;
 // -------------------------------------------------
 // 🎨 INTERFAZ VISUAL (FORMULARIO + LISTADO)
